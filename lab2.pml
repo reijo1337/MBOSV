@@ -1,40 +1,37 @@
-#define NUMPROCS 2
+int loopCount = 10;
+int x = 0;
 
-byte counter = 0;
-byte progress[NUMPROCS];
+mtype = {P, V}
+chan sema = [0] of { mtype };
 
-proctype incrementer(byte me)
-{
-  int temp;
-
-  temp = counter;
-  counter = temp + 1;
-  progress[me] = 1;
+active proctype dijkstra(){
+start: sema ! P -> sema ? V; goto start
 }
 
-init {
-  int i = 0;
-  int sum = 0;
+active proctype A() {
+    int i = 0;
+    int temp;
+    do
+    :: i < loopCount ->
+      i++;
+      sema ? P;
+      x++;
+      sema ! V;
+    :: i >= loopCount -> break
+    od
+}
 
-  atomic {
-    i = 0;
+active proctype B() {
+    int j = 0;
+    int temp;
     do
-    :: i < NUMPROCS ->
-      progress[i] = 0;
-      run incrementer(i);
-      i++
-    :: i >= NUMPROCS -> break
-    od;
-  }
-  atomic {
-    i = 0;
-    sum = 0;
-    do
-    :: i < NUMPROCS ->
-      sum = sum + progress[i];
-      i++
-    :: i >= NUMPROCS -> break
-    od;
-    assert(sum < NUMPROCS || counter == NUMPROCS)
-  }
+    :: j < loopCount ->
+      j++;
+      sema ? P;
+      if :: (x % 2 == 0) -> printf("x=%d\n", x);
+         :: (x % 2 != 0) ->skip
+      fi
+      sema ! V;
+    :: j >= loopCount -> break
+    od
 }

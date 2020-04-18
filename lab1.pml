@@ -1,16 +1,23 @@
 #define msgtype 1 
 chan name = [0] of { byte, byte }; 
-proctype A() {
-    name ! msgtype(4)
-    name ! msgtype(1) 
+active proctype A() {
+    int i = 0;
+    do
+    :: i < 2 ->
+      name ! msgtype(4);
+      name ! msgtype(1) ;
+      i++;
+    :: i >=2 -> break
+    od
 } 
-proctype B() {
+active proctype B() {
     byte state
-    name ? msgtype(state) 
-    printf("recive: %d\n", state); 
-    name ? msgtype(state) 
-    printf("recive: %d\n", state); 
-} 
-init {
-    atomic { run A(); run B() } 
+    int j = 0
+    do
+    :: j < 4 ->
+      name ? msgtype(state); 
+      printf("recive: %d\n", state); 
+      j++
+    :: j >= 4 -> break
+    od
 }
